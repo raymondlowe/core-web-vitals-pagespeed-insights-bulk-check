@@ -93,9 +93,9 @@ if __name__ == '__main__':
   # if -h or --help is on the arguments then print help and exit
   if ('-h' in sys.argv or '--help' in sys.argv) or (input_filename is None):
     print('Usage: python3 core-web-vitals-bulk.py [text file with list of urls]')
-    print('-v or --verbose: print out the json results')
-    print('-d or --desktop: run the pagespeed analysis on a desktop browser')
-    print('-c or --clear-cache: clear the requests-cache cache')
+    print('-v or --verbose: print more verbose details to the screen, no change to final report')
+    print('-d or --desktop: run the pagespeed analysis on a desktop browser otherwise it uses mobile mode for the test')
+    print('-c or --clear-cache: clear the requests-cache cache otherwise old cached data will be used')
 
     sys.exit(0)
 
