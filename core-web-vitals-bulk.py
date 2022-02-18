@@ -32,25 +32,47 @@ def pagespeed_list(url_list, desktop=False, verbose = False):
 
     result = pagespeed_insight_api(url, desktop, verbose)
 
-    largest_contentful_paint = result['lighthouseResult']['audits']['largest-contentful-paint']['displayValue'].replace(u'\xa0', u'') # Largest Contenful Paint
-    first_input_delay = str(round(result['loadingExperience']['metrics']['FIRST_INPUT_DELAY_MS']['distributions'][2]['proportion'] * 1000, 1)) + 'ms' # First Input Delay
-    cumulative_layout_shift = result['lighthouseResult']['audits']['cumulative-layout-shift']['displayValue'] # CLS
-
-    # trim trailing s from largest_contentful_paint
-    if largest_contentful_paint[-1] == 's':
-      largest_contentful_paint = largest_contentful_paint[:-1]
-    
-    # trim trailing ms from first_input_delay
-    if first_input_delay[-2:] == 'ms':
-      first_input_delay = first_input_delay[:-2]
+    # Performance
+    performance = float(result['lighthouseResult']['categories']['performance']['score'])
 
 
-    result_url = [url,float(largest_contentful_paint),float(first_input_delay),float(cumulative_layout_shift)]
+    # First Contentful Paint
+    first_contentful_paint = float(result['lighthouseResult']['audits']['first-contentful-paint']['score'])
+
+
+    # Speed Index
+    speed_index = float(result['lighthouseResult']['audits']['speed-index']['score'])
+
+    # Largest Contentful Paint
+    largest_contentful_paint = float(result['lighthouseResult']['audits']['largest-contentful-paint']['numericValue']) # Largest Contenful Paint
+
+
+    # Time to Interactive
+    time_to_interactive = float(result['lighthouseResult']['audits']['interactive']['score'])
+
+    # Total Blocking Time
+    total_blocking_time = float(result['lighthouseResult']['audits']['total-blocking-time']['numericValue'])
+
+    # Cumulative Layout Shift
+    cumulative_layout_shift = float(result['lighthouseResult']['audits']['cumulative-layout-shift']['displayValue']) # CLS
+
+
+    # # First Input Delay (not one of the main audits)
+    # first_input_delay = float(result['loadingExperience']['metrics']['FIRST_INPUT_DELAY_MS']['distributions'][2]['proportion'] )  # First Input Delay as seconds
+
+
+
+    result_url = [url, performance, first_contentful_paint ,\
+                  speed_index ,\
+                  largest_contentful_paint ,\
+                  time_to_interactive ,\
+                  total_blocking_time ,\
+                  cumulative_layout_shift  ]
     if verbose:
-      print(result_url)
+      print(url + " -> " + str(result_url))
+    else:
+      print(url + ' complete')
 
-
-    print(url + ' complete')
     results.append(result_url)
 
   return results
@@ -115,7 +137,18 @@ if __name__ == '__main__':
   results = pagespeed_list(url_list, desktop, verbose)
 
   #Convert to dataframe and export as excel
-  results_df = DataFrame (results,columns=['URL','LCP (s)','FID (ms)','CLS'])
+  results_df = DataFrame (results,columns=['URL',
+                                            'performance',\
+                                            'first contentful paint',\
+                                            'speed index',\
+                                            'largest contentful paint',\
+                                            'time to interactive',\
+                                            'total blocking time',\
+                                            'cumulative layout shift']) #,\
+                                            # 'first input delay'])
+
+
+
   # output to excel file with datetime in the filename
   output_filename = 'core-web-vitals-bulk-' + time.strftime('%Y%m%d-%H%M%S') + '.xlsx'
 
