@@ -1,5 +1,10 @@
 # general setup, common imports
-import json, requests, time, urllib.parse
+import requests_cache
+from email.policy import default
+import json
+import requests
+import time
+import urllib.parse
 import pandas as pd
 from pandas import DataFrame
 import sys
@@ -8,156 +13,183 @@ import secrets as secrets
 import shlex
 
 
+def pagespeed_insight_api(url, strategy, verbose=False, run=1):
+    if verbose:
+        print('\nTesting ' + url)
 
-def pagespeed_insight_api(url, desktop=False, verbose = False):
-  if verbose:
-    print('\nTesting ' + url)
-  if desktop:
-    strategy = 'desktop'
-  else:
-    strategy = 'mobile'
-  pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy{}&key={}'.format(url,strategy,secrets.api_key)
-  # pagespeed_results = urllib.request.urlopen(pagespeed_query_url).read().decode('UTF-8')
-  return requests.get(pagespeed_query_url).json()
-  # if verbose:
-  #   print(pagespeed_results)
-  # return json.loads(pagespeed_results)
+  # if strategy not in 'mobile' or 'desktop' then default to desktop
+    if strategy not in ['mobile', 'desktop']:
+        # THROW EXCEPTION
+        print('\n' + strategy + ' is not a valid strategy. Defaulting to desktop.')
+        strategy = 'desktop'
 
 
-def pagespeed_list(url_list, desktop=False, verbose = False):
-  results = []
+    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy{}&key={}&run={}'.format(
+        url, strategy, secrets.api_key, run)
+    # pagespeed_results = urllib.request.urlopen(pagespeed_query_url).read().decode('UTF-8')
+    if verbose:
+        print(pagespeed_query_url)
 
-  for url in url_list:
-    
+    result = requests.get(pagespeed_query_url).json()
 
-    result = pagespeed_insight_api(url, desktop, verbose)
+    # example         "fetchTime": "2022-02-18T08:55:06.255Z",
+    fetch_time = result['lighthouseResult']['fetchTime']
+    # parse fetch_time into datetime
+    fetch_time = time.strptime(fetch_time, "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    # Performance
-    performance = float(result['lighthouseResult']['categories']['performance']['score'])
-
+      # Performance
+    performance = float(result['lighthouseResult']
+                        ['categories']['performance']['score'])
 
     # First Contentful Paint
-    first_contentful_paint = float(result['lighthouseResult']['audits']['first-contentful-paint']['score'])
-
+    first_contentful_paint = float(
+        result['lighthouseResult']['audits']['first-contentful-paint']['score'])
 
     # Speed Index
-    speed_index = float(result['lighthouseResult']['audits']['speed-index']['score'])
+    speed_index = float(result['lighthouseResult']
+                        ['audits']['speed-index']['score'])
 
     # Largest Contentful Paint
-    largest_contentful_paint = float(result['lighthouseResult']['audits']['largest-contentful-paint']['numericValue']) # Largest Contenful Paint
-
+    largest_contentful_paint = float(
+        result['lighthouseResult']['audits']['largest-contentful-paint']['numericValue'])  # Largest Contenful Paint
 
     # Time to Interactive
-    time_to_interactive = float(result['lighthouseResult']['audits']['interactive']['score'])
+    time_to_interactive = float(
+        result['lighthouseResult']['audits']['interactive']['score'])
 
     # Total Blocking Time
-    total_blocking_time = float(result['lighthouseResult']['audits']['total-blocking-time']['numericValue'])
+    total_blocking_time = float(
+        result['lighthouseResult']['audits']['total-blocking-time']['numericValue'])
 
     # Cumulative Layout Shift
-    cumulative_layout_shift = float(result['lighthouseResult']['audits']['cumulative-layout-shift']['displayValue']) # CLS
-
+    cumulative_layout_shift = float(
+        result['lighthouseResult']['audits']['cumulative-layout-shift']['displayValue'])  # CLS
 
     # # First Input Delay (not one of the main audits)
     # first_input_delay = float(result['loadingExperience']['metrics']['FIRST_INPUT_DELAY_MS']['distributions'][2]['proportion'] )  # First Input Delay as seconds
+    combined_result = [url, 
+                    fetch_time, 
+                    strategy, 
+                    run, 
+                    performance, 
+                    first_contentful_paint,
+                    speed_index,
+                    largest_contentful_paint,
+                    time_to_interactive,
+                    total_blocking_time,
+                    cumulative_layout_shift]
+    # if verbose:
+    #   print(combined_result)
+      
+    return combined_result
+    # if verbose:
+    #   print(pagespeed_results)
+    # return json.loads(pagespeed_results)
 
 
+def pagespeed_list(url_list, platform=False, verbose=False, runs=1):
+    results = []
 
-    result_url = [url, performance, first_contentful_paint ,\
-                  speed_index ,\
-                  largest_contentful_paint ,\
-                  time_to_interactive ,\
-                  total_blocking_time ,\
-                  cumulative_layout_shift  ]
-    if verbose:
-      print(url + " -> " + str(result_url))
-    else:
-      print(url + ' complete')
+    for url in url_list:
 
-    results.append(result_url)
+        # loop runs times
+        for run in range(1, runs + 1):
 
-  return results
 
-#set up requests_cache
-import requests_cache
+          if platform == 'desktop' or  platform == 'both':
+            result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run)
+
+            if verbose:
+                print(url + " -> " + str(result_for_url))
+            else:
+                print(url + ' complete')
+
+            results.append(result_for_url)
+
+          if platform == 'mobile' or  platform == 'both':
+            result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run)
+
+            if verbose:
+                print(url + " -> " + str(result_for_url))
+            else:
+                print(url + ' complete')
+
+            results.append(result_for_url)
+
+    return results
+
+
+# set up requests_cache
 requests_cache.install_cache('pagespeed_cache')
 
 
 # main so this can be imported as a module
 if __name__ == '__main__':
-  # get the input filename from the first arg that isn't a switch
-  input_filename = None
-  for i in range(1, len(sys.argv)):
-    if sys.argv[i][0] != '-':
-      input_filename = sys.argv[i]
-      break
-  
 
-  # if -v or --verbose is on the arguments then set verbose to True
-  verbose = False
-  if '-v' in sys.argv or '--verbose' in sys.argv:
-    verbose = True
-    print('Verbose mode on')
-    print('input filename is ' + input_filename)
+    # use argparse to get command line arguments
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Get PageSpeed Insights results for a list of URLs')
+    # main argument is filename of urls list
+    parser.add_argument(
+        'url_list_file', help='file containing list of URLs to test')
+    # argument --platform can be 'desktop' 'mobile' or 'both'.  the default is 'both'
+    parser.add_argument('--platform', choices=['desktop', 'mobile', 'both'],
+                        help='platform to test [desktop|mobile|both], default both ', default='both')
+    parser.add_argument('--verbose', action='store_true', default=False,
+                        help='Print more details to stdout, default False')
+    parser.add_argument('--runs', type=int, default=1,
+                        help='Number of times to run PageSpeed Insights default 1')
+    args = parser.parse_args()
 
-# if -c or --clear-cache is one of the arguments then clear the requests-cache cache
-  if '-c' in sys.argv or '--clear-cache' in sys.argv:
-    requests_cache.clear()
+    # get the input filename from the first arg that isn't a switch
+    input_filename = args.url_list_file
+
+    platform = args.platform
+    verbose = args.verbose
+    runs = args.runs
+
     if verbose:
-      print('Cache cleared')
+        print('\nRunning PageSpeed Insights ' + str(runs) +
+              ' time(s) for ' + platform + ' platform(s) in verbose mode')
 
-  # if -d or --desktop then set desktop to True
-  desktop = False
-  if '-d' in sys.argv or '--desktop' in sys.argv:
-    desktop = True
+    # read the input_filename text file into a list called url_list
+    url_list = []
+    with open(input_filename, 'r') as f:
+        for line in f:
+            url_list.append(line.strip())
+
     if verbose:
-      print('Desktop mode')
+        print('\n\n\n')
+        print('url_list is {} urls'.format(len(url_list)))
 
-  # if -h or --help is on the arguments then print help and exit
-  if ('-h' in sys.argv or '--help' in sys.argv) or (input_filename is None):
-    print('Usage: python3 core-web-vitals-bulk.py [text file with list of urls]')
-    print('-v or --verbose: print more verbose details to the screen, no change to final report')
-    print('-d or --desktop: run the pagespeed analysis on a desktop browser otherwise it uses mobile mode for the test')
-    print('-c or --clear-cache: clear the requests-cache cache otherwise old cached data will be used')
+    # run the pagespeed_list function on the url_list
 
-    sys.exit(0)
+    results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs)
 
+    # Convert to dataframe and export as excel
+    results_df = DataFrame(results, columns=['URL',
+                                             'fetch date',
+                                             'platform',
+                                             'run number',
+                                             'performance',
+                                             'first contentful paint',
+                                             'speed index',
+                                             'largest contentful paint',
+                                             'time to interactive',
+                                             'total blocking time',
+                                             'cumulative layout shift'])  # ,\
+    # 'first input delay'])
 
-  # read the input_filename text file into a list called url_list
-  url_list = []
-  with open(input_filename, 'r') as f:
-    for line in f:
-      url_list.append(line.strip())
+    # output to excel file with datetime in the filename
+    output_filename = 'core-web-vitals-bulk-' + \
+        time.strftime('%Y%m%d-%H%M%S') + '.xlsx'
 
-  if verbose:
-    print('\n\n\n')
-    print('url_list is {} urls'.format(len(url_list)))
-
-  # run the pagespeed_list function on the url_list
-  
-  results = pagespeed_list(url_list, desktop, verbose)
-
-  #Convert to dataframe and export as excel
-  results_df = DataFrame (results,columns=['URL',
-                                            'performance',\
-                                            'first contentful paint',\
-                                            'speed index',\
-                                            'largest contentful paint',\
-                                            'time to interactive',\
-                                            'total blocking time',\
-                                            'cumulative layout shift']) #,\
-                                            # 'first input delay'])
-
-
-
-  # output to excel file with datetime in the filename
-  output_filename = 'core-web-vitals-bulk-' + time.strftime('%Y%m%d-%H%M%S') + '.xlsx'
-
-  optionsdf = pd.DataFrame({'options': [" ".join(map(shlex.quote, sys.argv[1:]))]})
-  excelwriter=pd.ExcelWriter(output_filename)
-  results_df.to_excel(excelwriter, sheet_name='Data')
-  optionsdf.to_excel(excelwriter, sheet_name='Options')
-  excelwriter.save()
-  print('\nResults saved to ' + output_filename)
-  print('\nDone!')
-
-
+    optionsdf = pd.DataFrame(
+        {'options': [" ".join(map(shlex.quote, sys.argv[1:]))]})
+    excelwriter = pd.ExcelWriter(output_filename)
+    results_df.to_excel(excelwriter, sheet_name='Data')
+    optionsdf.to_excel(excelwriter, sheet_name='Options')
+    excelwriter.save()
+    print('\nResults saved to ' + output_filename)
+    print('\nDone!')

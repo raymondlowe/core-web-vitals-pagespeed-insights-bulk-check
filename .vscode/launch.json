@@ -5,14 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: desktop verbose urls.txt",
+            "name": "Python: both verbose runs 2 urls.txt",
             "type": "python",
             "request": "launch",
             "program": "core-web-vitals-bulk.py",
             "console": "integratedTerminal",
             "args": [
-                "--desktop",
+                "--platform", "both",
                 "--verbose",
+                "--runs", "2",
                 "urls.txt"
             ],
         }
