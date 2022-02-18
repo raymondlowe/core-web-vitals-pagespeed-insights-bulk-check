@@ -23,3 +23,7 @@ Create your own Google API key from the cloud console, optionally restrict it to
 ```
 api_key ="<your key here>"
 ```
+
+Do a manual run so you can ensure the api is activated:
+
+https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://example.com/&key={your_key
