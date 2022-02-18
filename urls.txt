@@ -1,0 +1,4 @@
+https://example.com/
+https://www.domain.com/
+https://www.website.com/
+https://www.whitehouse.gov/
