@@ -22,7 +22,7 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
         strategy = 'desktop'
 
 
-    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy{}&key={}&run={}'.format(
+    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy={}&key={}&run={}'.format(
         url, strategy, secrets.api_key, run)
     # pagespeed_results = urllib.request.urlopen(pagespeed_query_url).read().decode('UTF-8')
     if verbose:
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         description='Get PageSpeed Insights results for a list of URLs')
     # main argument is filename of urls list
     parser.add_argument(
-        'url_list_file', help='file containing list of URLs to test', type=FileType)
+        'url_list_file', help='file containing list of URLs to test', type=FileType('r'))
     # argument --platform can be 'desktop' 'mobile' or 'both'.  the default is 'both'
     parser.add_argument('--platform', choices=['desktop', 'mobile', 'both'],
                         help='platform to test [desktop|mobile|both], default both ', default='both')
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
-    input_filename = args.url_list_file
+    input_file = args.url_list_file
 
     platform = args.platform
     verbose = args.verbose
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
     # read the input_filename text file into a list called url_list
     url_list = []
-    with open(input_filename, 'r') as f:
+    with input_file as f:
         for line in f:
             url_list.append(line.strip())
 
