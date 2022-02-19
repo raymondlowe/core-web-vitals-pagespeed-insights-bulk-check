@@ -1,16 +1,14 @@
 # general setup, common imports
-import requests_cache
-from email.policy import default
-import json
-import requests
-import time
-import urllib.parse
-import pandas as pd
-from pandas import DataFrame
-import sys
-import io
+import datetime
 import secrets as secrets
 import shlex
+import sys
+import time
+
+import pandas as pd
+import requests
+import requests_cache
+from pandas import DataFrame
 
 
 def pagespeed_insight_api(url, strategy, verbose=False, run=1):
@@ -34,8 +32,8 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
 
     # example         "fetchTime": "2022-02-18T08:55:06.255Z",
     fetch_time = result['lighthouseResult']['fetchTime']
-    # parse fetch_time into datetime
-    fetch_time = time.strptime(fetch_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+    # parse fetch_time into datetime using datetime module
+    fetch_time = datetime.datetime.strptime(fetch_time, "%Y-%m-%dT%H:%M:%S.%fZ")
 
       # Performance
     performance = float(result['lighthouseResult']
@@ -128,11 +126,14 @@ if __name__ == '__main__':
 
     # use argparse to get command line arguments
     import argparse
+    # import argparse file format type
+    from argparse import FileType
+
     parser = argparse.ArgumentParser(
         description='Get PageSpeed Insights results for a list of URLs')
     # main argument is filename of urls list
     parser.add_argument(
-        'url_list_file', help='file containing list of URLs to test')
+        'url_list_file', help='file containing list of URLs to test', type=FileType)
     # argument --platform can be 'desktop' 'mobile' or 'both'.  the default is 'both'
     parser.add_argument('--platform', choices=['desktop', 'mobile', 'both'],
                         help='platform to test [desktop|mobile|both], default both ', default='both')
