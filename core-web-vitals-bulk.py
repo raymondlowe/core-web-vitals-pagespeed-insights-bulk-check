@@ -22,7 +22,7 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
         strategy = 'desktop'
 
 
-    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy={}&key={}&run={}'.format(
+    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy={}&key={}&run={}&utm_source=lighthouse&utm_campaign=core-web-vitals-bulk'.format(
         url, strategy, secrets.api_key, run)
     # pagespeed_results = urllib.request.urlopen(pagespeed_query_url).read().decode('UTF-8')
     if verbose:
