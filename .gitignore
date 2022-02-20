@@ -133,6 +133,5 @@ secrets.py
 *.xlsx
 *.sqlite
 *.cmd
-liveexample.json
-output.json
+*.json
 temp.py
