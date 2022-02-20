@@ -51,6 +51,9 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
     largest_contentful_paint = float(
         result['lighthouseResult']['audits']['largest-contentful-paint']['numericValue'])  # Largest Contenful Paint
 
+    # audits / largest-contentful-paint-element / details /items /0 / selector
+    largest_contentful_paint_element = result['lighthouseResult']['audits']['largest-contentful-paint-element']['details']['items'][0]['node']['selector']
+
     # Time to Interactive
     time_to_interactive = float(
         result['lighthouseResult']['audits']['interactive']['score'])
@@ -73,6 +76,7 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
                     first_contentful_paint,
                     speed_index,
                     largest_contentful_paint,
+                    largest_contentful_paint_element,
                     time_to_interactive,
                     total_blocking_time,
                     cumulative_layout_shift]
@@ -177,6 +181,7 @@ if __name__ == '__main__':
                                              'first contentful paint',
                                              'speed index',
                                              'largest contentful paint',
+                                             'largest contentful paint element',
                                              'time to interactive',
                                              'total blocking time',
                                              'cumulative layout shift'])  # ,\
