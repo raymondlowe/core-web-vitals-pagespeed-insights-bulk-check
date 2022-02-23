@@ -1,17 +1,18 @@
 # general setup, common imports
 import datetime
+from re import L
 import secrets as secrets
 import shlex
 import sys
 import time
 
 import pandas as pd
-import requests
-import requests_cache
+# import requests
+# import requests_cache
 from pandas import DataFrame
 
 
-def pagespeed_insight_api(url, strategy, verbose=False, run=1):
+def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
     if verbose:
         print('\nTesting ' + url)
 
@@ -21,14 +22,18 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
         print('\n' + strategy + ' is not a valid strategy. Defaulting to desktop.')
         strategy = 'desktop'
 
+    if len(label):
+        label_str = "&label=" + label
+    else:
+        label_str = ""
 
-    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy={}&key={}&run={}&utm_source=lighthouse&utm_campaign=core-web-vitals-bulk'.format(
-        url, strategy, secrets.api_key, run)
+    pagespeed_query_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={}&strategy={}&key={}&run={}{}&utm_source=lighthouse&utm_campaign=core-web-vitals-bulk'.format(
+        url, strategy, secrets.api_key, run, label_str)
     # pagespeed_results = urllib.request.urlopen(pagespeed_query_url).read().decode('UTF-8')
     if verbose:
         print(pagespeed_query_url)
 
-    result = requests.get(pagespeed_query_url).json()
+    result = session.get(pagespeed_query_url).json()
 
     # example         "fetchTime": "2022-02-18T08:55:06.255Z",
     fetch_time = result['lighthouseResult']['fetchTime']
@@ -89,7 +94,7 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1):
     # return json.loads(pagespeed_results)
 
 
-def pagespeed_list(url_list, platform=False, verbose=False, runs=1):
+def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
     results = []
 
     for url in url_list:
@@ -99,7 +104,7 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1):
 
 
           if platform == 'desktop' or  platform == 'both':
-            result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run)
+            result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run, label)
 
             if verbose:
                 print(url + " -> " + str(result_for_url))
@@ -109,7 +114,7 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1):
             results.append(result_for_url)
 
           if platform == 'mobile' or  platform == 'both':
-            result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run)
+            result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run, label)
 
             if verbose:
                 print(url + " -> " + str(result_for_url))
@@ -122,7 +127,9 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1):
 
 
 # set up requests_cache
-requests_cache.install_cache('pagespeed_cache')
+# requests_cache.install_cache('pagespeed_cache')
+from requests_cache import CachedSession
+session = CachedSession('pagespeed_cache')
 
 
 # main so this can be imported as a module
@@ -143,8 +150,12 @@ if __name__ == '__main__':
                         help='platform to test [desktop|mobile|both], default both ', default='both')
     parser.add_argument('--verbose', action='store_true', default=False,
                         help='Print more details to stdout, default False')
+    parser.add_argument('--nocache', action='store_true', default=False,
+                        help='Without caching and clearing cache, default False')
     parser.add_argument('--runs', type=int, default=1,
                         help='Number of times to run PageSpeed Insights default 1')
+    parser.add_argument('--label', type=str, default="",
+                        help='Optional label; effects caching and output filename')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
@@ -153,10 +164,22 @@ if __name__ == '__main__':
     platform = args.platform
     verbose = args.verbose
     runs = args.runs
+    nocache = args.nocache
+    label = args.label
+
 
     if verbose:
         print('\nRunning PageSpeed Insights ' + str(runs) +
               ' time(s) for ' + platform + ' platform(s) in verbose mode')
+        print('\nCache db is ' + str(session.cache.db_path))
+
+
+    if nocache:
+        # set session expire to 0
+        session.expire_after = 0
+        if verbose:
+            print('\nNot using cache')
+
 
     # read the input_filename text file into a list called url_list
     url_list = []
@@ -170,7 +193,7 @@ if __name__ == '__main__':
 
     # run the pagespeed_list function on the url_list
 
-    results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs)
+    results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs, label=label)
 
     # Convert to dataframe and export as excel
     results_df = DataFrame(results, columns=['URL',
@@ -187,9 +210,11 @@ if __name__ == '__main__':
                                              'cumulative layout shift'])  # ,\
     # 'first input delay'])
 
+    if len(label) > 0:
+        label = '_' + label
     # output to excel file with datetime in the filename
     output_filename = 'core-web-vitals-bulk-' + \
-        time.strftime('%Y%m%d-%H%M%S') + '.xlsx'
+        time.strftime('%Y%m%d-%H%M%S') + label + '.xlsx'
 
     optionsdf = pd.DataFrame(
         {'options': [" ".join(map(shlex.quote, sys.argv[1:]))]})
