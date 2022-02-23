@@ -4,16 +4,52 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": "Python: both verbose runs 2 urls.txt",
+            "name": "Python: desktop verbose runs 1 urls.txt label test",
             "type": "python",
             "request": "launch",
             "program": "core-web-vitals-bulk.py",
             "console": "integratedTerminal",
             "args": [
-                "--platform", "both",
+                "--platform",
+                "desktop",
                 "--verbose",
-                "--runs", "2",
+                "--runs",
+                "1",
+                "--label",
+                "test",
+                "urls.txt"
+            ],
+        }
+        {
+            "name": "Python: both verbose runs 1 urls.txt ",
+            "type": "python",
+            "request": "launch",
+            "program": "core-web-vitals-bulk.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--platform",
+                "both",
+                "--verbose",
+                "--runs",
+                "1",
+                "urls.txt"
+            ],
+        },
+        {
+            "name": "Python: both verbose runs 2 urls.txt nocache",
+            "type": "python",
+            "request": "launch",
+            "program": "core-web-vitals-bulk.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--platform",
+                "both",
+                "--verbose",
+                "--runs",
+                "2",
+                "--nocache",
                 "urls.txt"
             ],
         }
