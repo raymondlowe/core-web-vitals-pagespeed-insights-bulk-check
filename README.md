@@ -56,7 +56,7 @@ Wait for the key to be made, can be used immediately, or use RESTRICT KEY to res
 
 Optionally name the key so it isn't "API key <n>"
 
-Put the API key in a file in the same folder as `secrets.py`
+Put the API key in a file named `secrets.py` located in the same folder.
 
 ```
 api_key ="<your key here>"
@@ -64,4 +64,6 @@ api_key ="<your key here>"
 
 Do a manual run so you can ensure the api is activated:
 
-https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://example.com/&key={your_key
+https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://example.com/&key={your_key}
+
+
