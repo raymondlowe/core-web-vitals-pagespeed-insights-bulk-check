@@ -18,7 +18,32 @@ Usage: python3 core-web-vitals-bulk.py [text file with list of urls]
 
 Clone this repo.
 
-Create your own Google API key from the cloud console, optionally restrict it to just pagespeed api, and the put it in a file in the same folder as `secrets.py`
+```
+git clone https://github.com/raymondlowe/core-web-vitals-pagespeed-insights-bulk-check.git
+```
+
+
+Install requirements
+```
+cd core-web-vitals-pagespeed-insights-bulk-check
+pip install -r requirements.txt
+```
+
+Create your own Google API key from the cloud console, optionally restrict it to just pagespeed api.
+
+Go to:
+```
+https://console.cloud.google.com/apis/credentials
+```
+
+Click: 
+* CREATE CREDENTIALS
+
+Wait for the key to be made, can be used immediately, or use RESTRICT KEY to restrict it.
+
+Optionally name the key so it isn't "API key <n>"
+
+Put the API key in a file in the same folder as `secrets.py`
 
 ```
 api_key ="<your key here>"
