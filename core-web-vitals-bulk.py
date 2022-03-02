@@ -5,6 +5,7 @@ import secrets as secrets
 import shlex
 import sys
 import time
+import os
 
 import pandas as pd
 # import requests
@@ -156,6 +157,8 @@ if __name__ == '__main__':
                         help='Number of times to run PageSpeed Insights default 1')
     parser.add_argument('--label', type=str, default="",
                         help='Optional label; effects caching and output filename')
+    parser.add_argument('--csvfile', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
+                        help='Optional: csv to *append* results to')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
@@ -166,6 +169,7 @@ if __name__ == '__main__':
     runs = args.runs
     nocache = args.nocache
     label = args.label
+    csvfilename = args.csvfile
 
 
     if verbose:
@@ -190,6 +194,12 @@ if __name__ == '__main__':
     if verbose:
         print('\n\n\n')
         print('url_list is {} urls'.format(len(url_list)))
+        print('\n\n\n')
+        if csvfilename is not None:
+            print('csvfilename: {}'.format(csvfilename))
+        else:
+            print('csvfilename: None')
+
 
     # run the pagespeed_list function on the url_list
 
@@ -225,4 +235,19 @@ if __name__ == '__main__':
     optionsdf.to_excel(excelwriter, sheet_name='Options')
     excelwriter.save()
     print('\nResults saved to ' + output_filename)
+
+    if csvfilename is not None:
+        # if text file called csvfilename doesn't exist then create it with headers
+        if not os.path.isfile(csvfilename):
+            with open(csvfilename, 'w') as f:
+                f.write('Index,URL,fetch date,platform,run number,performance,first contentful paint,speed index,largest contentful paint,largest contentful paint element,time to interactive,total blocking time,cumulative layout shift,label\n')
+            if verbose:
+                print('\nCreated csv file ' + csvfilename)
+        
+        
+        # append results_df to csvfile
+        results_df.to_csv(csvfilename, mode='a', header=False)
+        print('\nResults appended to ' + csvfilename)
+
+
     print('\nDone!')
