@@ -9,10 +9,23 @@ https://colab.research.google.com/drive/1dvldrLnrpNPu0lAu9sZRV_jJMJiET56b?usp=sh
 
 ## Usage
 ```
-Usage: python3 core-web-vitals-bulk.py [text file with list of urls]
--v or --verbose: more details printed to screen, no change to report
--d or --desktop: run the pagespeed analysis on a desktop browser, otherwise it does a mobile test
--c or --clear-cache: clear the requests-cache cache otherwise it repeats the data from the previous run
+usage: core-web-vitals-bulk.py [-h] [--platform {desktop,mobile,both}] [--verbose] [--nocache] [--runs RUNS] [--label LABEL] [--csvfile [CSVFILE]]
+                               url_list_file
+
+Get PageSpeed Insights results for a list of URLs
+
+positional arguments (should go last):
+  url_list_file         file containing list of URLs to test
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --platform {desktop,mobile,both}
+                        platform to test {desktop,mobile,both}, default 'both'
+  --verbose             Print more details to stdout, default False
+  --nocache             Without caching and clearing cache, default False
+  --runs RUNS           Number of times to run PageSpeed Insights default 1
+  --label LABEL         Optional label; effects caching and output filename default none/blank
+  --csvfile [CSVFILE]   Optional: csv to *append* results to: default pagespeed-insights-bulk.csv
 ```
 ## Installation / setup
 
