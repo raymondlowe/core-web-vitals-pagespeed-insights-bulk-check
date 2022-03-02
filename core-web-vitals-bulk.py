@@ -84,7 +84,8 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
                     largest_contentful_paint_element,
                     time_to_interactive,
                     total_blocking_time,
-                    cumulative_layout_shift]
+                    cumulative_layout_shift,
+                    label]
     # if verbose:
     #   print(combined_result)
       
@@ -130,7 +131,6 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
 # requests_cache.install_cache('pagespeed_cache')
 from requests_cache import CachedSession
 session = CachedSession('pagespeed_cache')
-
 
 # main so this can be imported as a module
 if __name__ == '__main__':
@@ -195,20 +195,22 @@ if __name__ == '__main__':
 
     results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs, label=label)
 
+
     # Convert to dataframe and export as excel
     results_df = DataFrame(results, columns=['URL',
-                                             'fetch date',
-                                             'platform',
-                                             'run number',
-                                             'performance',
-                                             'first contentful paint',
-                                             'speed index',
-                                             'largest contentful paint',
-                                             'largest contentful paint element',
-                                             'time to interactive',
-                                             'total blocking time',
-                                             'cumulative layout shift'])  # ,\
-    # 'first input delay'])
+                                                'fetch date',
+                                                'platform',
+                                                'run number',
+                                                'performance',
+                                                'first contentful paint',
+                                                'speed index',
+                                                'largest contentful paint',
+                                                'largest contentful paint element',
+                                                'time to interactive',
+                                                'total blocking time',
+                                                'cumulative layout shift',
+                                                'label'])  
+
 
     if len(label) > 0:
         label = '_' + label
