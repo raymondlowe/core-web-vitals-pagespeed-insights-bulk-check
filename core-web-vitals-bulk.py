@@ -99,31 +99,36 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
 def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
     results = []
 
+
+
     for url in url_list:
 
         # loop runs times
         for run in range(1, runs + 1):
 
+            if platform == 'desktop' or  platform == 'both':
+                result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run, label)
 
-          if platform == 'desktop' or  platform == 'both':
-            result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run, label)
+                if verbose:
+                    print(url + " -> " + str(result_for_url)+ ' complete desktop')
+                else:
+                    print(url + ' complete desktop')
 
+                results.append(result_for_url)
+
+            if platform == 'mobile' or  platform == 'both':
+                result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run, label)
+
+                if verbose:
+                    print(url + " -> " + str(result_for_url)+ ' complete mobile')
+                else:
+                    print(url + ' complete mobile')
+
+                results.append(result_for_url)  
+
+            # print x out of y
             if verbose:
-                print(url + " -> " + str(result_for_url))
-            else:
-                print(url + ' complete')
-
-            results.append(result_for_url)
-
-          if platform == 'mobile' or  platform == 'both':
-            result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run, label)
-
-            if verbose:
-                print(url + " -> " + str(result_for_url))
-            else:
-                print(url + ' complete')
-
-            results.append(result_for_url)
+                print("url " + str(url_list.index(url) + 1) + " of " + str(len(url_list)) + " urls, run " + str(run) + " of " + str(runs) + " runs")
 
     return results
 
@@ -182,7 +187,7 @@ if __name__ == '__main__':
         # set session expire to 0
         session.expire_after = 0
         if verbose:
-            print('\nNot using cache')
+            print('\nExpiring cached pages and reloading from server')
 
 
     # read the input_filename text file into a list called url_list
