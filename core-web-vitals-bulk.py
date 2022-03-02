@@ -162,8 +162,11 @@ if __name__ == '__main__':
                         help='Number of times to run PageSpeed Insights default 1')
     parser.add_argument('--label', type=str, default="",
                         help='Optional label; effects caching and output filename default none/blank')
-    parser.add_argument('--csvfile', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
+    parser.add_argument('--csv', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
                         help='Optional: csv to *append* results to: default pagespeed-insights-bulk.csv')
+    parser.add_argument('--xlsx', type=str, nargs="?", const='core-web-vitals-bulk-' + \
+                                                                time.strftime('%Y%m%d-%H%M%S') + '.xlsx',
+                        help='Optional: xlsx to be created with results to: default core-web-vitals-bulk-<datetime>_<label>.xlsx')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
@@ -174,20 +177,36 @@ if __name__ == '__main__':
     runs = args.runs
     nocache = args.nocache
     label = args.label
-    csvfilename = args.csvfile
+    csvfilename = args.csv
+    xl_filename = args.xlsx
 
+    if (csvfilename is None) and (xl_filename is None):
+        print("No output file specified, exiting")
+        exit(1)
 
     if verbose:
         print('\nRunning PageSpeed Insights ' + str(runs) +
               ' time(s) for ' + platform + ' platform(s) in verbose mode')
         print('\nCache db is ' + str(session.cache.db_path))
 
+        # print csv filename if it exists
+        if csvfilename is not None:
+            print('\nCSV output file: ' + csvfilename)
+        
+        # print xlsx filename if it exists
+        if xl_filename is not None:
+            if len(label) > 0:
+                # insert the label into the xl_filename
+                xl_filename = xl_filename.replace('.xlsx', '_' + label + '.xlsx')
+
+            print('\nXLSX output file: ' + xl_filename)
+
 
     if nocache:
         # set session expire to 0
         session.expire_after = 0
         if verbose:
-            print('\nExpiring cached pages and reloading from server')
+            print('\nExpiring cached results and loading fresh data from server')
 
 
     # read the input_filename text file into a list called url_list
@@ -197,14 +216,9 @@ if __name__ == '__main__':
             url_list.append(line.strip())
 
     if verbose:
-        print('\n\n\n')
-        print('url_list is {} urls'.format(len(url_list)))
-        print('\n\n\n')
-        if csvfilename is not None:
-            print('csvfilename: {}'.format(csvfilename))
-        else:
-            print('csvfilename: None')
-
+        print('\nurl_list is {} urls'.format(len(url_list)))
+        print('\n')
+        
 
     # run the pagespeed_list function on the url_list
 
@@ -226,20 +240,15 @@ if __name__ == '__main__':
                                                 'cumulative layout shift',
                                                 'label'])  
 
+    if xl_filename is not None:
 
-    if len(label) > 0:
-        label = '_' + label
-    # output to excel file with datetime in the filename
-    output_filename = 'core-web-vitals-bulk-' + \
-        time.strftime('%Y%m%d-%H%M%S') + label + '.xlsx'
-
-    optionsdf = pd.DataFrame(
-        {'options': [" ".join(map(shlex.quote, sys.argv[1:]))]})
-    excelwriter = pd.ExcelWriter(output_filename)
-    results_df.to_excel(excelwriter, sheet_name='Data')
-    optionsdf.to_excel(excelwriter, sheet_name='Options')
-    excelwriter.save()
-    print('\nResults saved to ' + output_filename)
+        optionsdf = pd.DataFrame(
+            {'options': [" ".join(map(shlex.quote, sys.argv[1:]))]})
+        excelwriter = pd.ExcelWriter(xl_filename)
+        results_df.to_excel(excelwriter, sheet_name='Data')
+        optionsdf.to_excel(excelwriter, sheet_name='Options')
+        excelwriter.save()
+        print('\nResults saved to ' + xl_filename)
 
     if csvfilename is not None:
         # if text file called csvfilename doesn't exist then create it with headers
