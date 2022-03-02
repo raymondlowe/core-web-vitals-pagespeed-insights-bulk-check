@@ -6,6 +6,25 @@
     "configurations": [
         
         {
+            "name": "Python: desktop verbose runs 1 csv urls.txt label test",
+            "type": "python",
+            "request": "launch",
+            "program": "core-web-vitals-bulk.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--platform",
+                "desktop",
+                "--verbose",
+                "--runs",
+                "1",
+                "--csv",
+                "--label",
+                "test",
+
+                "urls.txt"
+            ],
+        },     
+        {
             "name": "Python: desktop verbose runs 1 urls.txt label test",
             "type": "python",
             "request": "launch",
@@ -21,7 +40,7 @@
                 "test",
                 "urls.txt"
             ],
-        }
+        },
         {
             "name": "Python: both verbose runs 1 urls.txt ",
             "type": "python",
