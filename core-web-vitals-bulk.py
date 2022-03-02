@@ -156,9 +156,9 @@ if __name__ == '__main__':
     parser.add_argument('--runs', type=int, default=1,
                         help='Number of times to run PageSpeed Insights default 1')
     parser.add_argument('--label', type=str, default="",
-                        help='Optional label; effects caching and output filename')
+                        help='Optional label; effects caching and output filename default none/blank')
     parser.add_argument('--csvfile', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
-                        help='Optional: csv to *append* results to')
+                        help='Optional: csv to *append* results to: default pagespeed-insights-bulk.csv')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
