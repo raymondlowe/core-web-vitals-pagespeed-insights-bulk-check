@@ -45,9 +45,9 @@ pip install -r requirements.txt
 Create your own Google API key from the cloud console, optionally restrict it to just pagespeed api.
 
 Go to:
-```
+
 https://console.cloud.google.com/apis/credentials
-```
+
 
 Click: 
 * CREATE CREDENTIALS
