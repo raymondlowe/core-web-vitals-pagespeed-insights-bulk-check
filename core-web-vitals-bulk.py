@@ -172,13 +172,13 @@ if __name__ == '__main__':
                         help='Without caching and clearing cache, default False')
     parser.add_argument('--runs', type=int, default=1,
                         help='Number of times to run PageSpeed Insights default 1')
-    parser.add_argument('--label', type=str, default="",
-                        help='Optional label; effects caching and output filename default none/blank')
     parser.add_argument('--csv', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
                         help='Optional: csv to *append* results to: default pagespeed-insights-bulk.csv')
     parser.add_argument('--xlsx', type=str, nargs="?", const='core-web-vitals-bulk-' + \
                                                                 time.strftime('%Y%m%d-%H%M%S') + '.xlsx',
                         help='Optional: xlsx to be created with results to: default core-web-vitals-bulk-<datetime>_<label>.xlsx')
+    parser.add_argument('--label', type=str, default="",
+                        help='Optional label; effects caching and output filename default none/blank')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch

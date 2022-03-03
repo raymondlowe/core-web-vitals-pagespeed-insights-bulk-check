@@ -9,24 +9,32 @@ https://colab.research.google.com/drive/1dvldrLnrpNPu0lAu9sZRV_jJMJiET56b?usp=sh
 
 ## Usage
 ```
-usage: core-web-vitals-bulk.py [-h] [--platform {desktop,mobile,both}] [--verbose] [--nocache] [--runs RUNS] [--label LABEL] [--csvfile [CSVFILE]]
+usage: core-web-vitals-bulk.py [-h] [--platform {desktop,mobile,both}] [--verbose] [--nocache] [--runs RUNS]
+                               [--label LABEL] [--csv [CSV]] [--xlsx [XLSX]]
                                url_list_file
 
 Get PageSpeed Insights results for a list of URLs
 
-positional arguments (should go last):
+positional arguments:
   url_list_file         file containing list of URLs to test
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --platform {desktop,mobile,both}
-                        platform to test {desktop,mobile,both}, default 'both'
+                        platform to test [desktop|mobile|both], default both
   --verbose             Print more details to stdout, default False
   --nocache             Without caching and clearing cache, default False
   --runs RUNS           Number of times to run PageSpeed Insights default 1
+  --csv [CSV]           Optional: csv to *append* results to: default pagespeed-insights-bulk.csv
+  --xlsx [XLSX]         Optional: xlsx to be created with results to: default core-web-vitals-
+                        bulk-<datetime>_<label>.xlsx
   --label LABEL         Optional label; effects caching and output filename default none/blank
-  --csvfile [CSVFILE]   Optional: csv to *append* results to: default pagespeed-insights-bulk.csv
+
 ```
+
+At least one of `--csv` or `--xlsx` must be specified, filenames are optional. To avoid confusion 
+don't use these options without a filename immediately before specifying the url_list_file.
+
 ## Installation / setup
 
 Clone this repo.
