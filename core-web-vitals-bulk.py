@@ -12,10 +12,16 @@ import pandas as pd
 # import requests_cache
 from pandas import DataFrame
 
+total_counter = 0
+so_far_counter = 0
 
 def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
+    global so_far_counter
+
     if verbose:
         print('\nTesting ' + url)
+    
+    so_far_counter += 1
 
   # if strategy not in 'mobile' or 'desktop' then default to desktop
     if strategy not in ['mobile', 'desktop']:
@@ -97,6 +103,8 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
 
 
 def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
+    global total_counter 
+    global so_far_counter 
     results = []
 
 
@@ -110,9 +118,9 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
                 result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run, label)
 
                 if verbose:
-                    print(url + " -> " + str(result_for_url)+ ' complete desktop')
+                    print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + " -> " + str(result_for_url)+ ' complete desktop')
                 else:
-                    print(url + ' complete desktop')
+                    print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + ' complete desktop')
 
                 results.append(result_for_url)
 
@@ -120,9 +128,9 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
                 result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run, label)
 
                 if verbose:
-                    print(url + " -> " + str(result_for_url)+ ' complete mobile')
+                    print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + " -> " + str(result_for_url)+ ' complete mobile')
                 else:
-                    print(url + ' complete mobile')
+                    print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + ' complete mobile')
 
                 results.append(result_for_url)  
 
@@ -140,6 +148,10 @@ session = CachedSession('pagespeed_cache')
 
 # main so this can be imported as a module
 if __name__ == '__main__':
+
+    total_counter = 0
+    so_far_counter = 0
+
 
     # use argparse to get command line arguments
     import argparse
@@ -219,6 +231,9 @@ if __name__ == '__main__':
         print('\nurl_list is {} urls'.format(len(url_list)))
         print('\n')
         
+    total_counter = len(url_list) * runs
+    if platform == 'both':
+        total_counter = total_counter * 2
 
     # run the pagespeed_list function on the url_list
 
