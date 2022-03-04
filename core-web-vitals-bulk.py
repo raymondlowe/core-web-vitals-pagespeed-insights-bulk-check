@@ -43,7 +43,14 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
     result = session.get(pagespeed_query_url).json()
 
     # example         "fetchTime": "2022-02-18T08:55:06.255Z",
-    fetch_time = result['lighthouseResult']['fetchTime']
+    try:
+        fetch_time = result['lighthouseResult']['fetchTime']
+    except:
+        #error fetching time
+        # print the whole result and exit
+        print("error fetching")
+        print(result)
+        sys.exit()
     # parse fetch_time into datetime using datetime module
     fetch_time = datetime.datetime.strptime(fetch_time, "%Y-%m-%dT%H:%M:%S.%fZ")
 
