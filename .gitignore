@@ -140,3 +140,6 @@ temp.py
 *.xls
 *.xlsx
 
+cloudflareZones.py
+.vscode/launch.json
+.vscode/launch.json
