@@ -6,11 +6,15 @@ import shlex
 import sys
 import time
 import os
+from urllib.parse import urlparse
 
 import pandas as pd
 # import requests
 # import requests_cache
 from pandas import DataFrame
+import tldextract
+
+from cloudflareZones import zones_list
 
 total_counter = 0
 so_far_counter = 0
@@ -147,11 +151,63 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
 
     return results
 
+# function find_referenced_urls(url_list)
+# takes a list of urls and returns a list of all assets mentioned in the pages as src="..."
+# 
+def find_referenced_urls(url_list):
+    total_counter = len(url_list)
+    so_far_counter = 0
+    referenced_urls = []
+
+    if verbose:
+        print("Scanning {} urls for referenced urls".format(total_counter))
+
+    # make a list of clearable domains from the keys in zones_list
+    clearable_domains = []
+    for key in zones_list:
+        clearable_domains.append(key)
+
+  
+  
+
+    for url in url_list:
+        so_far_counter += 1
+        if verbose:
+            print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + ' fetching')
+
+        # get the html
+        html = requests.get(url).text
+
+        # find all the src="..." and href="..."
+        src_urls = re.findall('src="(.*?)"', html) + re.findall('<link.*href=["|\'](.*?)["|\']', html)
+        
+        # if the url is relative then use the current url root to make it absolute
+        for src_url in src_urls:
+            if src_url.startswith("//"):
+                src_url = "https:" + src_url
+            if src_url.startswith("/"):
+                src_url = urlparse(url).scheme + "://" + urlparse(url).netloc + src_url
+            # if the src_url is for the same domain as url then add it to the list
+            if urlparse(src_url).netloc == urlparse(url).netloc:
+                if src_url not in referenced_urls:
+                    # get the hostname without www subdomain
+
+                    hostname = tldextract.extract(src_url).registered_domain
+                    
+                    if hostname in clearable_domains:
+                        referenced_urls.append(src_url)
+
+                    
+
+    return referenced_urls
 
 # set up requests_cache
 # requests_cache.install_cache('pagespeed_cache')
 from requests_cache import CachedSession
 session = CachedSession('pagespeed_cache')
+import requests
+import re
+uncached_session = requests.Session()
 
 # main so this can be imported as a module
 if __name__ == '__main__':
@@ -177,6 +233,8 @@ if __name__ == '__main__':
                         help='Print more details to stdout, default False')
     parser.add_argument('--nocache', action='store_true', default=False,
                         help='Without caching and clearing cache, default False')
+    parser.add_argument('--clearcloudflare', action='store_true', default=False,
+                        help='Clear the CloudFlare cache of all pages before testing, default False')                       
     parser.add_argument('--runs', type=int, default=1,
                         help='Number of times to run PageSpeed Insights default 1')
     parser.add_argument('--csv', type=str, nargs="?", const="pagespeed-insights-bulk.csv",
@@ -195,6 +253,7 @@ if __name__ == '__main__':
     verbose = args.verbose
     runs = args.runs
     nocache = args.nocache
+    clearcloudflare = args.clearcloudflare
     label = args.label
     csvfilename = args.csv
     xl_filename = args.xlsx
@@ -237,7 +296,53 @@ if __name__ == '__main__':
     if verbose:
         print('\nurl_list is {} urls'.format(len(url_list)))
         print('\n')
-        
+
+
+    if clearcloudflare:
+        if verbose:
+            print('\nClearing CloudFlare cache of all pages before testing')
+
+        clearcloudflare_url_list = url_list + find_referenced_urls(url_list)
+
+        if verbose:
+            print('\nClear CloudFlare list is {} urls'.format(len(clearcloudflare_url_list)))
+            print('\n')
+
+        # use api to clear the cloudflare cache of all pages in the clearcloudflare_url_list
+        for url in clearcloudflare_url_list:
+            if verbose:
+                print('\nClearing CloudFlare cache of ' + url)
+            
+            # check which domain this url is and get the api email and key from the zones_list
+            domain = tldextract.extract(url).registered_domain
+            if domain in zones_list:
+                email = zones_list[domain]['email']
+                key = zones_list[domain]['key']
+
+                # get the cloudflare api url
+                cloudflare_api_url = 'https://api.cloudflare.com/client/v4/zones/' + \
+                    zones_list[domain]['zoneid'] + '/purge_cache'
+                
+                # set the headers for the email and the api_key
+                headers = {'X-Auth-Email': email, 'X-Auth-Key': key}
+
+                # set the data for the request to purge just this url
+                data = {'files': [url]}
+
+                # make the request
+                r = uncached_session.post(cloudflare_api_url, headers=headers, json=data)
+
+                if r.status_code != 200:
+                    print('\nCloudFlare purge request failed for ' + url)
+                    print('\nError: ' + r.text)
+                    print('\n')
+                else:
+                    if verbose:
+                        print('\nCloudFlare purge request successful for ' + url)
+                        print('\n')
+
+
+ 
     total_counter = len(url_list) * runs
     if platform == 'both':
         total_counter = total_counter * 2
