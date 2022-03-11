@@ -98,5 +98,4 @@ zones_list = {'domain.com': {'zoneid': '<id from cloudflare dashboard>',
               }
 ```
 
-Make a copy from the `cloudflarezones-example.py` example file and copy it to `cloudflarezones.py`.  You need to at least have a blank file.
-
+Make a copy from the `cloudflarezones-example.py` example file and copy it to `cloudflarezones.py`.  
