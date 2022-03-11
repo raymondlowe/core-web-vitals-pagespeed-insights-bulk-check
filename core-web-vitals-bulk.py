@@ -111,7 +111,7 @@ def pagespeed_insight_api(url, strategy, verbose=False, run=1, label=""):
     # return json.loads(pagespeed_results)
 
 
-def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
+def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label="",run_delay=0):
     global total_counter 
     global so_far_counter 
     results = []
@@ -125,6 +125,8 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
 
             if platform == 'desktop' or  platform == 'both':
                 result_for_url = pagespeed_insight_api(url, 'desktop', verbose, run, label)
+                # delay
+                time.sleep(run_delay)
 
                 if verbose:
                     print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + " -> " + str(result_for_url)+ ' complete desktop')
@@ -135,6 +137,7 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
 
             if platform == 'mobile' or  platform == 'both':
                 result_for_url = pagespeed_insight_api(url, 'mobile', verbose, run, label)
+                time.sleep(run_delay)
 
                 if verbose:
                     print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + " -> " + str(result_for_url)+ ' complete mobile')
@@ -291,6 +294,7 @@ if __name__ == '__main__':
                         help='Optional: xlsx to be created with results to: default core-web-vitals-bulk-<datetime>_<label>.xlsx')
     parser.add_argument('--label', type=str, default="",
                         help='Optional label; effects caching and output filename default none/blank')
+    parser.add_argument('--delay', type=int, default=0, help='delay between runs in seconds, default 0')
     args = parser.parse_args()
 
     # get the input filename from the first arg that isn't a switch
@@ -304,6 +308,7 @@ if __name__ == '__main__':
     label = args.label
     csvfilename = args.csv
     xl_filename = args.xlsx
+    run_delay = args.delay
 
     if (csvfilename is None) and (xl_filename is None):
         print("No output file specified, exiting")
@@ -397,7 +402,7 @@ if __name__ == '__main__':
 
     # run the pagespeed_list function on the url_list
 
-    results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs, label=label)
+    results = pagespeed_list(url_list, platform=platform, verbose=verbose, runs=runs, label=label, run_delay=run_delay)
 
 
     # Convert to dataframe and export as excel
