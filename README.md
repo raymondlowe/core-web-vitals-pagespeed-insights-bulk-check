@@ -24,6 +24,7 @@ options:
                         platform to test [desktop|mobile|both], default both
   --verbose             Print more details to stdout, default False
   --nocache             Without caching and clearing cache, default False
+  --clearcloudflare     Clear the CloudFlare cache of all pages before testing, default False  
   --runs RUNS           Number of times to run PageSpeed Insights default 1
   --csv [CSV]           Optional: csv to *append* results to: default pagespeed-insights-bulk.csv
   --xlsx [XLSX]         Optional: xlsx to be created with results to: default core-web-vitals-
@@ -74,4 +75,27 @@ Do a manual run so you can ensure the api is activated:
 
 https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://example.com/&key={your_key}
 
+## Clear CloudFlare zones
 
+If you want to use the --clearcloudflare option then you need to populate a file called `cloudflareZones.py` that contains the information for the cloudflare api.
+
+The format is:
+
+```
+
+zones_list = {'domain.com': {'zoneid': '<id from cloudflare dashboard>',
+                             'email': '<cloudflare account email address>',
+                             'api_key': '<cloudflare API Global Key for the account>'},
+
+              'domain2.com': {'zoneid': '<id from cloudflare dashboard>',
+                              'email': '<cloudflare account email address>',
+                              'api_key': '<cloudflare API Global Key for the account>'},
+
+
+              'domain3.com': {'zoneid': '<id from cloudflare dashboard>',
+                              'email': '<cloudflare account email address>',
+                              'api_key': '<cloudflare API Global Key for the account>'}
+              }
+```
+
+Make a copy from the `cloudflarezones-example.py` example file and copy it to `cloudflarezones.py`.  
