@@ -206,7 +206,7 @@ def clear_cloudflare_cache(clearcloudflare_url_list_by_domain, verbose):
 
         if domain in zones_list:
             email = zones_list[domain]['email']
-            key = zones_list[domain]['key']
+            key = zones_list[domain]['api_key']
 
 
         if verbose:
@@ -350,7 +350,7 @@ if __name__ == '__main__':
             print('\nClearing CloudFlare cache of all pages before testing')
 
  
-        from cloudflareZones import zones_list
+        from cloudflarezones import zones_list
 
         clearcloudflare_url_list = url_list + find_referenced_urls(url_list)
 
