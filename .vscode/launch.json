@@ -6,6 +6,25 @@
     "configurations": [
         
         {
+            "name": "Python: test hkfastfacts clearcloudflare",
+            "type": "python",
+            "request": "launch",
+            "program": "core-web-vitals-bulk.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--platform",
+                "desktop",
+                "--verbose",
+                "--runs",
+                "1",
+                "--csv",
+                "--clearcloudflare",
+                "--label",
+                "test",
+
+                "hkfastfacts.csv"
+            ],
+        },        {
             "name": "Python: desktop verbose runs 1 csv urls.txt label test",
             "type": "python",
             "request": "launch",

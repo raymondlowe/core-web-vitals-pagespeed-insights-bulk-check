@@ -174,7 +174,7 @@ def find_referenced_urls(url_list):
             print(str(so_far_counter)+"/" +str(total_counter) + ": "+ url + ' fetching')
 
         # get the html
-        html = requests.get(url).text
+        html = uncached_session.get(url).text
 
         # find all the src="..." and href="..."
         src_urls = re.findall('src="(.*?)"', html) + re.findall('<link.*href=["|\'](.*?)["|\']', html)
