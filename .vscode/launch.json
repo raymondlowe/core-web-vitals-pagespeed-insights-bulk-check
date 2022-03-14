@@ -4,7 +4,27 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "name": "Python: test clearcloudflare",
+            "type": "python",
+            "request": "launch",
+            "program": "core-web-vitals-bulk.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--platform",
+                "desktop",
+                "--verbose",
+                "--runs",
+                "1",
+                "--csv",
+                "--clearcloudflare",
+                "--label",
+                "test",
+                "testinput.csv"
+            ]
+
+        },
         {
             "name": "Python: desktop verbose runs 1 csv urls.txt label test",
             "type": "python",
@@ -20,10 +40,9 @@
                 "--csv",
                 "--label",
                 "test",
-
                 "urls.txt"
             ],
-        },     
+        },
         {
             "name": "Python: desktop verbose runs 1 urls.txt label test",
             "type": "python",
