@@ -202,9 +202,36 @@ def find_referenced_urls(url_list):
 
     return referenced_urls
 
+
+def cloudflare_api(clearcloudflare_url_list_by_domain, verbose, domain, email, key):
+    # get the cloudflare api url
+    cloudflare_api_url = 'https://api.cloudflare.com/client/v4/zones/' + \
+        zones_list[domain]['zoneid'] + '/purge_cache'
+
+    # set the headers for the email and the api_key
+    headers = {'X-Auth-Email': email, 'X-Auth-Key': key}
+
+    # set the data for the request to purge just this url
+    data = {'files': clearcloudflare_url_list_by_domain}
+
+    # make the request
+    r = uncached_session.post(cloudflare_api_url, headers=headers, json=data)
+
+    if r.status_code != 200:
+        print('\nCloudFlare purge request failed for {} :  {}'.format(domain,r.text))
+        exit(1)
+
+    else:
+        if verbose:
+            print('\nCloudFlare purge request for {} successful'.format(domain))
+            print('\n')
+
+
+
+
 def clear_cloudflare_cache(clearcloudflare_url_list_by_domain, verbose):
 
-# check which domain this url is and get the api email and key from the zones_list
+        # check which domain this url is and get the api email and key from the zones_list
         domain = tldextract.extract(clearcloudflare_url_list_by_domain[0]).registered_domain
 
         if domain in zones_list:
@@ -216,35 +243,20 @@ def clear_cloudflare_cache(clearcloudflare_url_list_by_domain, verbose):
             print('\nClear CloudFlare list {} is {} urls'.format(domain,len(clearcloudflare_url_list_by_domain)))
             print('\n')
 
-        # use api to clear the cloudflare cache of all pages in the clearcloudflare_url_list
+            # use api to clear the cloudflare cache of all pages in the clearcloudflare_url_list
             print('\nClearing CloudFlare cache of {}' .format(clearcloudflare_url_list_by_domain))
         
             print ('Using email {} and key {}'.format(email, key))        
             print('\n')
+            print('in batches of 30')
+
+            # loop through clearcloudflare_url_list_by_domain in batches of 30 and call cloudflare_api
+            for i in range(0, len(clearcloudflare_url_list_by_domain), 30):
+                clearcloudflare_url_list = clearcloudflare_url_list_by_domain[i:i+30]
+                cloudflare_api(clearcloudflare_url_list, verbose, domain, email, key)
 
 
-            # get the cloudflare api url
-            cloudflare_api_url = 'https://api.cloudflare.com/client/v4/zones/' + \
-                zones_list[domain]['zoneid'] + '/purge_cache'
-            
-            # set the headers for the email and the api_key
-            headers = {'X-Auth-Email': email, 'X-Auth-Key': key}
-
-            # set the data for the request to purge just this url
-            data = {'files': [clearcloudflare_url_list_by_domain]}
-
-            # make the request
-            r = uncached_session.post(cloudflare_api_url, headers=headers, json=data)
-
-            if r.status_code != 200:
-                print('\nCloudFlare purge request failed for {} :  {}'.format(domain,r.text))
-                exit(1)
-
-            else:
-                if verbose:
-                    print('\nCloudFlare purge request for {} successful'.format(domain))
-                    print('\n')
-
+                
 
 
 
@@ -378,6 +390,7 @@ if __name__ == '__main__':
         working_domain = ""
 
         for url in clearcloudflare_url_list:
+            
             
 
             if tldextract.extract(url).registered_domain == working_domain:
