@@ -116,7 +116,8 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
     global so_far_counter 
     results = []
 
-
+    # start time is now
+    start_time = time.time()
 
     for url in url_list:
 
@@ -146,6 +147,25 @@ def pagespeed_list(url_list, platform=False, verbose=False, runs=1, label=""):
             # print x out of y
             if verbose:
                 print("url " + str(url_list.index(url) + 1) + " of " + str(len(url_list)) + " urls, run " + str(run) + " of " + str(runs) + " runs")
+
+        # calculate estimate time remaining
+        so_far_time = (time.time() - start_time) 
+        print(so_far_time)
+        if so_far_time > 1:
+            total_time = so_far_time / total_counter * so_far_counter
+            time_remaining = total_time - so_far_time
+            time_remaining_minutes = time_remaining / 60
+            time_remaining_hours = time_remaining_minutes / 60
+            time_remaining_days = time_remaining_hours / 24
+
+            # display the remaining time
+            if time_remaining_minutes < 1:
+                print('\nEstimated time remaining: {:.2f} seconds'.format(time_remaining))
+            elif time_remaining_hours < 1:
+                print('\nEstimated time remaining: {:.2f} minutes'.format(time_remaining_minutes))
+            elif time_remaining_days < 1:
+                print('\nEstimated time remaining: {:.2f} hours'.format(time_remaining_hours))
+
 
     return results
 
